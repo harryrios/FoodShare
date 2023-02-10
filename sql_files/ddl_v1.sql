@@ -10,10 +10,10 @@ create table account(
 
     primary key(id),
     check(acc_type='manager'
-              or acc_type='shopper')
+          or acc_type='shopper')
 );
 
-create table pantry_shopper_pair(
+create table pantry_shopper(
     pantry_id     bigint not null,
     shopper_id    bigint not null,
     primary key(pantry_id, shopper_id),
@@ -21,53 +21,26 @@ create table pantry_shopper_pair(
     foreign key(shopper_id) references account(id)
 );
 
-
 create table pantry(
     id          bigint not null,
-    inventory_id bigint not null,
     name    varchar(40) not null,
     manager_id  bigint not null,
 
     primary key(id),
-    foreign key(inventory_id) references inventory(id),
     foreign key(manager_id) references account(id)
 );
+
 create table inventory(
-    id          bigint not null,
+    pantry_id   bigint not null,
     item_id     bigint not null,
 
-    primary key(id),
+    primary key(pantry_id, item_id),
     foreign key(item_id) references inventory_item(id)
 );
 
-create table generic_item(
-    id          bigint not null,
-    item_type   varchar(20) not null,
-    primary key(id)
-);
-create table transaction(
-    id          bigint not null,
-    shopper_id  bigint not null,
-    pantry_id   bigint not null,
-    request_time    datetime not null,
-    request_status  varchar(10) not null,
-    request_action  varchar(10) not null,
-    description     varchar(400) not null,
-
-    primary key(id),
-    foreign key(shopper_id) references account(id),
-    foreign key(pantry_id) references pantry(id),
-    check(request_status='pending'
-        or request_status='approved'
-        or request_status='denied'
-    ),
-    check(request_action='receive'
-        or request_action='donate'
-    )
-);
 create table inventory_item(
     id          bigint not null,
-    generic_id  bigint not null,
+    item_type   varchar(20) not null,
     quantity    int not null,
     origin_id   bigint not null,
     expiration_date date,
@@ -75,7 +48,30 @@ create table inventory_item(
     image           bytea,
 
     primary key(id),
-    foreign key(generic_id) references generic_item(id),
     check(quantity>=0),
     foreign key(origin_id) references transaction(id)
+);
+
+create table transaction(
+    id          bigint not null,
+    shopper_id  bigint not null,
+    pantry_id   bigint not null,
+    item_id     bigint not null,
+    request_time    datetime not null,
+    request_status  varchar(10) not null,
+    request_action  varchar(10) not null,
+    quantity        int not null,
+    description     varchar(400) not null,
+
+    primary key(id),
+    foreign key(shopper_id) references account(id),
+    foreign key(pantry_id, item_id) references inventory(pantry_id,item_id),
+    check(request_status='pending'
+        or request_status='approved'
+        or request_status='denied'
+    ),
+    check(request_action='receive'
+        or request_action='donate'
+    ),
+    check(quantity>0)
 );
