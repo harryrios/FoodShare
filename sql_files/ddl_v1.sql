@@ -4,7 +4,7 @@ use foodshare_db;
 
 create table account(
     id          bigint not null,
-    email       varchar(20) not null,
+    email       varchar(20) not null unique,
     password    varchar(40) not null,
     acc_type    varchar(10) not null,
 
